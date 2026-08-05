@@ -43,9 +43,19 @@ public class HttpRequest(RequestMethods method, string path, string version)
 
         foreach (string header in headers.Skip(1).ToArray())
         {
+            if (header.Trim().Length == 0)
+            {
+                continue;
+            }
+
+            string[] parts = header.Split(": ", 2);
+
+            HttpHeader.HttpHeaderData<object> headerData = new HttpHeader.HttpHeaderData<object>();
+            headerData.SetStringifier();
+            headerData.CreateHeader(parts[0], parts[1]);
             
+            request.AppendRequestHeader(headerData);
         }
-        
         
         return request;
     }
