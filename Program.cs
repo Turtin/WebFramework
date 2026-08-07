@@ -1,19 +1,49 @@
-﻿using System.Text;
-using Microsoft.VisualBasic.CompilerServices;
-using Web_Framework.http;
+﻿using System.Runtime.CompilerServices;
+using Web_Framework.cmd;
+using Web_Framework.cmd.commands;
+using Web_Framework.logger;
 using Web_Framework.server;
 
-HttpServer.RegisterConnectionEvent(new ConnectionEventHandler());
+class Program
+{
+    private static Logger logger = Logger.GetLogger();
+    public static HttpServer server;
 
-HttpServer server = HttpServer.GetServer();
-server.Create();
-server.Start();
+    public static void StartupProccess()
+    {
+        logger.Log(Logger.LogLevel.Info, "Initialising startup sequence...");
+        
+        // Setup
+        Thread.CurrentThread.Name = "Startup";
+    
+        // Event Registration
+        // Connection Event
+        HttpServer.RegisterConnectionEvent(new ConnectionEventHandler());
+        
+        // Command registration
+        CommandListener.RegisterCommand("stop", new StopCommand());
+    
+        // Server Start
+        // Enable Commands
+        CommandListener.StartListener();
+    
+        // Start Http service
+        server = HttpServer.GetServer();
+        server.Create();
+        server.Start();
+    }
 
-var response = new HttpResponse();
-var header = new HttpHeader.HttpHeaderData<object>();
+    public static void Main(string[] args)
+    {
+        StartupProccess();
+    }
+}
 
-header.CreateHeader("Content-Type", IntegerType.FromObject(2));
-header.SetStringifier();
-response.AddHeader(header);
-
-Console.WriteLine(Encoding.ASCII.GetString(response.GetResponseBytes()));
+// var response = new HttpResponse();
+// var header = new HttpHeader.HttpHeaderData<object>();
+//
+// header.CreateHeader("Content-Type", IntegerType.FromObject(2));
+// header.SetStringifier();
+// response.AddHeader(header);
+//
+// Console.WriteLine(Encoding.ASCII.GetString(response.GetResponseBytes()));

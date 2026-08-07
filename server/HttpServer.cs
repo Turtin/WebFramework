@@ -1,11 +1,13 @@
 using System.Net;
 using System.Net.Sockets;
 using Web_Framework.http;
+using Web_Framework.logger;
 
 namespace Web_Framework.server;
 
 public class HttpServer
 {
+    private Logger logger = Logger.GetLogger();
     private static HttpServer _server = null!;
     private static List<IConnectionEvent> _connectionEvents = new List<IConnectionEvent>();
     private Socket _serverSocket;
@@ -34,44 +36,50 @@ public class HttpServer
     public void Create()
     {
         // Prepare an endpoint
-        IPAddress ip = IPAddress.Parse("127.0.0.1");
+        IPAddress ip = IPAddress.Parse("0.0.0.0");
         IPEndPoint endPoint = new IPEndPoint(ip, 80);
         
         _serverSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        _serverSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+        _serverSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
         _serverSocket.Bind(endPoint);
     }
 
     private void ConnectionListener()
     {
-        Console.WriteLine("Listening...");   
+        logger.Log(Logger.LogLevel.Info, "Listening...");   
         while (_serverRunning)
         {
-            Socket client = _serverSocket.Accept();
-
-            foreach (IConnectionEvent connectionEvent in _connectionEvents)
+            // Polling rate 2 Hz
+            if (_serverSocket.Poll(500000, SelectMode.SelectRead))
             {
-                connectionEvent.Handle(client);
+                Socket client = _serverSocket.Accept();
+
+                foreach (IConnectionEvent connectionEvent in _connectionEvents)
+                {
+                    connectionEvent.Handle(client);
+                }   
             }
         }
-        Console.WriteLine("Connection listener stopped");
+        logger.Log(Logger.LogLevel.Info, "Stopped connection listener");
     }
 
     public void Start()
     {
-        Console.WriteLine($"Starting listener on {_serverSocket.LocalEndPoint}");
+        logger.Log(Logger.LogLevel.Info, $"Starting listener on {_serverSocket.LocalEndPoint}");
         
         _listenerThread = new Thread(new ThreadStart(ConnectionListener));
-        
+        _listenerThread.Name = "HTTP";
         _serverRunning  = true;
         _serverSocket.Listen(10);
         _listenerThread.Start();
         
-        Console.WriteLine("Server started");
+        logger.Log(Logger.LogLevel.Info, "Server started");
     }
 
     public void Stop()
     {
-        Console.WriteLine("Stopping server");
+        logger.Log(Logger.LogLevel.Info, "Stopping server");
         
         _serverRunning = false;
         _listenerThread?.Join();
