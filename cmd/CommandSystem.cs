@@ -3,11 +3,30 @@ using Web_Framework.logger;
 
 namespace Web_Framework.cmd;
 
-public static class CommandListener
+public static class CommandSystem
 {
     private static Thread _thread;
-    private static bool _running;
+    private static volatile bool _running;
     private static Dictionary<string, Command> _commands = new Dictionary<string, Command>();
+    private static StringBuilder charbuffer = new StringBuilder();
+
+    public static void HandleTerminalOutput(string line)
+    {
+        if (line.Length < charbuffer.Length)
+        {
+            for (int i = 0; i < charbuffer.Length; i++)
+            {
+                line += " ";
+            }
+        }
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.WriteLine(line);
+
+        if (_running)
+        {
+            Console.Write($"> {charbuffer}");
+        }
+    }
     
     /// <summary>
     /// This should be run is a separate thread to allow commands to be handled alongside the rest of the server functions
@@ -15,7 +34,7 @@ public static class CommandListener
     /// </summary>
     private static void CommandEntry()
     {
-        StringBuilder charbuffer = new StringBuilder();
+        Console.Write("\r> ");
         
         while (_running)
         {
@@ -32,10 +51,10 @@ public static class CommandListener
                     string commandText = charbuffer.ToString();
                     string[] commandComponents = commandText.Split(" ");
                     
-                    if (!_commands.ContainsKey(commandText))
+                    if (!_commands.ContainsKey(commandComponents[0]))
                     {
-                        Logger.GetLogger().Log(Logger.LogLevel.Info, "Command not found: " + commandComponents[0]);
                         charbuffer.Clear();
+                        Logger.GetLogger().Log(Logger.LogLevel.Info, "Command not found: " + commandComponents[0]);
                         continue;
                     }
 
@@ -44,8 +63,8 @@ public static class CommandListener
 
                     _commands.TryGetValue(commandName, out Command command);
 
-                    command.Run(commandArgs, commandText);
                     charbuffer.Clear();
+                    command.Run(commandArgs, commandText);
                 }
                 else if (keyInfo.Key == ConsoleKey.Backspace)
                 {
@@ -62,6 +81,8 @@ public static class CommandListener
                     Console.Write($"\r> {charbuffer}");
                 }
             }
+            
+            Thread.Sleep(1); // Attempt to reduce CPU usage
         }
     }
 
@@ -93,6 +114,6 @@ public static class CommandListener
     public static void StopListener()
     {
         _running = false;
-        _thread.Join();
+        _thread.Join(1);
     }
 }

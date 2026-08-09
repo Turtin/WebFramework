@@ -16,21 +16,21 @@ class Program
         // Setup
         Thread.CurrentThread.Name = "Startup";
     
-        // Event Registration
+        // Event Registration:
         // Connection Event
         HttpServer.RegisterConnectionEvent(new ConnectionEventHandler());
         
         // Command registration
-        CommandListener.RegisterCommand("stop", new StopCommand());
+        CommandSystem.RegisterCommand("stop", new StopCommand());
     
-        // Server Start
-        // Enable Commands
-        CommandListener.StartListener();
-    
+        // Server Start:
         // Start Http service
         server = HttpServer.GetServer();
         server.Create();
         server.Start();
+        
+        // Enable Commands
+        CommandSystem.StartListener();
     }
 
     public static void Main(string[] args)

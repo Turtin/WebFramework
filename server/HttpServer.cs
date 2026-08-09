@@ -50,15 +50,26 @@ public class HttpServer
         logger.Log(Logger.LogLevel.Info, "Listening...");   
         while (_serverRunning)
         {
-            // Polling rate 2 Hz
-            if (_serverSocket.Poll(500000, SelectMode.SelectRead))
+            try
             {
-                Socket client = _serverSocket.Accept();
-
-                foreach (IConnectionEvent connectionEvent in _connectionEvents)
+                // Polling rate 2 Hz
+                if (_serverSocket.Poll(500000, SelectMode.SelectRead))
                 {
-                    connectionEvent.Handle(client);
-                }   
+                    Socket client = _serverSocket.Accept();
+
+                    Task.Run(() => // Prevent any bad event handling from breaking the server
+                    {
+                        Thread.CurrentThread.Name = "HTTP"; // Fixes logging name
+                        
+                        foreach (IConnectionEvent connectionEvent in _connectionEvents)
+                        {
+                            connectionEvent.Handle(client);
+                        }
+                    });
+                }
+            } catch (Exception e) when (e is SocketException || e is ObjectDisposedException) {
+                logger.Log(Logger.LogLevel.Error, "Something went wrong...");
+                logger.Log(Logger.LogLevel.Error, e.Message);
             }
         }
         logger.Log(Logger.LogLevel.Info, "Stopped connection listener");
@@ -78,9 +89,7 @@ public class HttpServer
     }
 
     public void Stop()
-    {
-        logger.Log(Logger.LogLevel.Info, "Stopping server");
-        
+    {  
         _serverRunning = false;
         _listenerThread?.Join();
     }

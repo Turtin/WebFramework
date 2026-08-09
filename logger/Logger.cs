@@ -1,3 +1,5 @@
+using Web_Framework.cmd;
+
 namespace Web_Framework.logger;
 
 public class Logger
@@ -32,22 +34,24 @@ public class Logger
     {
         switch (level)
         {
-         case LogLevel.Info:
-             Console.ForegroundColor = ConsoleColor.White;
-             break;
-         case LogLevel.Error:
-             Console.ForegroundColor = ConsoleColor.Red;
-             break;
-         case LogLevel.Warning:
-             Console.ForegroundColor = ConsoleColor.Yellow;
-             break;
+            case LogLevel.Info:
+                Console.ForegroundColor = ConsoleColor.White;
+                break;
+            case LogLevel.Error:
+                Console.ForegroundColor = ConsoleColor.Red;
+                break;
+            case LogLevel.Warning:
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                break;
         }
 
         string type = level.ToString().ToUpper();
         string currentTime = DateTime.Now.ToString("HH:mm:ss");
         string thread = Thread.CurrentThread.Name == null ? "Unknown" : Thread.CurrentThread.Name;
-        
-        Console.WriteLine($"[{currentTime}] [{type}] [{thread}]: {message}");
+
+        string output = $"[{currentTime}] [{type}] [{thread}]: {message}";
+
+        CommandSystem.HandleTerminalOutput(output);
         Console.ResetColor();
     }
 }

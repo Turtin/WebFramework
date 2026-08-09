@@ -9,11 +9,11 @@ public class StopCommand: Command
     
     public void Run(string[] args, string command)
     {
-        logger.Log(Logger.LogLevel.Info, "Stopping server");
-        
-        Program.server.Stop();
-        CommandListener.StopListener();
+        logger.Log(Logger.LogLevel.Info, "Shutting down server...");
 
-        logger.Log(Logger.LogLevel.Info, "Stopped server");
+        Program.server.Stop();
+        CommandSystem.StopListener();
+
+        logger.Log(Logger.LogLevel.Info, "Server shutdown completed");
     }
 }
