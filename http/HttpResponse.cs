@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 
 namespace Web_Framework.http;
@@ -7,6 +8,11 @@ namespace Web_Framework.http;
 /// </summary>
 public class HttpResponse
 {
+    // These are feilds the are formatted differently to the rest and hence stored ♦differently
+    public HttpStatusCode StatusCode { get; set; }
+    public string HttpVersion { get; set; }
+    
+    
     // Stores all the headers for this server response
     private List<HttpHeader.IHttpHeaders<object>> _headers = new List<HttpHeader.IHttpHeaders<object>>();
 
@@ -27,8 +33,12 @@ public class HttpResponse
     {
         return _headers;
     }
-    
-    
+
+    public HttpResponse CreaetResponse(HttpResponse request) // tbc
+    {
+        return this;
+    }
+
     /// <summary>
     /// Work in progress!
     ///
