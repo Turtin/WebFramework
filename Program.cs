@@ -12,23 +12,42 @@ class Program
     public static void StartupProccess()
     {
         logger.Log(Logger.LogLevel.Info, "Initialising startup sequence...");
-        
+
+
         // Setup
         Thread.CurrentThread.Name = "Startup";
-    
+
         // Event Registration:
-        // Connection Event
-        HttpServer.RegisterConnectionEvent(new ConnectionEventHandler());
+        try
+        {
+            // Connection Event
+            HttpServer.RegisterConnectionEvent(new ConnectionEventHandler());
+        }
+        catch (Exception ex)
+        {
+            logger.Log(Logger.LogLevel.Warning, "A non-fatal error occured during the startup sequence.\n Failed to register an event handler");
+            logger.Log(Logger.LogLevel.Warning, ex.Message);
+        }
         
+
         // Command registration
-        CommandSystem.RegisterCommand("stop", new StopCommand());
-    
+        try
+        {
+            CommandSystem.RegisterCommand("stop", new StopCommand());
+            CommandSystem.RegisterCommand("restart", new RestartCommand());
+        }
+        catch (Exception ex)
+        {
+            logger.Log(Logger.LogLevel.Warning, "A non-fatal error occured during the startup sequence.\n Failed to register a command handler");
+            logger.Log(Logger.LogLevel.Warning, ex.Message);
+        }
+
         // Server Start:
         // Start Http service
         server = HttpServer.GetServer();
         server.Create();
         server.Start();
-        
+
         // Enable Commands
         CommandSystem.StartListener();
     }

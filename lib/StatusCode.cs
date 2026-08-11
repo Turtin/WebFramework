@@ -3,7 +3,7 @@ namespace Web_Framework.http;
 public readonly record struct Code(int StatusCode, string Status);
 
 // Source https://umbraco.com/knowledge-base/http-status-codes/
-public static class StatusCode
+public class StatusCode
 {
     // Info Response
     public static readonly Code Continue = new(100, "Continue");

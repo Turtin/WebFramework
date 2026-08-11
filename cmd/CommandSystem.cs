@@ -1,4 +1,5 @@
 using System.Text;
+using Web_Framework.lib.err;
 using Web_Framework.logger;
 
 namespace Web_Framework.cmd;
@@ -88,12 +89,25 @@ public static class CommandSystem
 
     /// <summary>
     /// Registers a command to the registry so that when it is called it can be executed.
+    /// If the command is already registered it will through a non-fatal error but the new command will not be implemented
+    /// on top of the old one.
     /// </summary>
     /// <param name="name">What in terminal will trigger the command</param>
     /// <param name="command">The code to trigger when then command is executed</param>
     public static void RegisterCommand(string name, Command command)
     {
-        _commands.Add(name, command);
+        if (!_commands.TryAdd(name, command))
+        {
+            throw new CommandAlreadyImplementedException(name);
+        }
+    }
+
+    /// <summary>
+    /// Resets the command registry to be completely empty, should really avoid using this, its only use case really is when restarting the server
+    /// </summary>
+    public static void UnregisterCommands()
+    {
+        _commands.Clear();
     }
 
     /// <summary>
