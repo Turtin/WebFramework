@@ -1,7 +1,9 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Web_Framework.http;
 using Web_Framework.lib;
 using Web_Framework.lib.err;
+using Web_Framework.logger;
 
 namespace Web_Framework.web;
 
@@ -61,6 +63,27 @@ public class WebPaths
     
     public Func<StatusCode> GetPath(string path)
     {
+        string[]  segments = path.Split('/');
+
+        try
+        {
+            Tree<Func<StatusCode>>.Node<Func<StatusCode>> currentNode = _paths.GetNode(segments[0]);
+            
+            foreach (string segment in segments)
+            {
+                segments = segments.Skip(1).ToArray();
+                if (segments.Length == 1)
+                {
+                    return currentNode.Data[0];
+                }
+                currentNode = currentNode.GetNode(segment);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.GetLogger().Log(Logger.LogLevel.Warning, $"Path not found: {path}");
+        }
+
         return null; // temp
     }
 }

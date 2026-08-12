@@ -1,21 +1,19 @@
 ﻿using System.Runtime.CompilerServices;
 using Web_Framework.cmd;
 using Web_Framework.cmd.commands;
+using Web_Framework.file;
 using Web_Framework.logger;
 using Web_Framework.server;
 
 class Program
 {
-    private static Logger logger = Logger.GetLogger();
-    public static HttpServer server;
-
     public static void StartupProccess()
     {
-        logger.Log(Logger.LogLevel.Info, "Initialising startup sequence...");
-
-
         // Setup
         Thread.CurrentThread.Name = "Startup";
+        Installer.Install();
+        
+        logger.Log(Logger.LogLevel.Info, "Initialising startup sequence...");
 
         // Event Registration:
         try
@@ -51,6 +49,10 @@ class Program
         // Enable Commands
         CommandSystem.StartListener();
     }
+
+    private static Logger logger = Logger.GetLogger();
+
+    public static HttpServer server;
 
     public static void Main(string[] args)
     {
