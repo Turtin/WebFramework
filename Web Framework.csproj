@@ -6,6 +6,8 @@
         <RootNamespace>Web_Framework</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Authors>Turtin Dev</Authors>
+        <Company>Turtin Dev</Company>
     </PropertyGroup>
 
     <ItemGroup>
