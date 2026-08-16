@@ -14,6 +14,10 @@ class Program
         Installer.Install();
         
         logger.Log(Logger.LogLevel.Info, "Initialising startup sequence...");
+        
+        // Load Config
+        logger.Log(Logger.LogLevel.Info, "Loading config options...");
+        ConfigManager.GetManager();
 
         // Event Registration:
         try
@@ -33,6 +37,7 @@ class Program
         {
             CommandSystem.RegisterCommand("stop", new StopCommand());
             CommandSystem.RegisterCommand("restart", new RestartCommand());
+            CommandSystem.RegisterCommand("reload", new ReloadConfigCommand());
         }
         catch (Exception ex)
         {

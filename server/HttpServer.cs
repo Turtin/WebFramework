@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Web_Framework.file;
 using Web_Framework.http;
 using Web_Framework.logger;
 
@@ -8,6 +9,7 @@ namespace Web_Framework.server;
 public class HttpServer
 {
     private Logger logger = Logger.GetLogger();
+    private ConfigManager _configManager = ConfigManager.GetManager();
     private static HttpServer _server = null!;
     private static List<IConnectionEvent> _connectionEvents = new List<IConnectionEvent>();
     private Socket _serverSocket;
@@ -36,8 +38,8 @@ public class HttpServer
     public void Create()
     {
         // Prepare an endpoint
-        IPAddress ip = IPAddress.Parse("0.0.0.0");
-        IPEndPoint endPoint = new IPEndPoint(ip, 80);
+        IPAddress ip = IPAddress.Parse(_configManager.GetString("ip-address"));
+        IPEndPoint endPoint = new IPEndPoint(ip, _configManager.GetInt("port"));
         
         _serverSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         _serverSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
