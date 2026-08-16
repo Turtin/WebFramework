@@ -11,8 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="file\resources\server.cfg" />
-      <EmbeddedResource Include="file\resources\server.cfg" />
+      <None Remove="file\resources\**" />
+      <EmbeddedResource Include="file\resources\**" />
     </ItemGroup>
 
 </Project>
