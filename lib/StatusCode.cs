@@ -1,4 +1,4 @@
-namespace Web_Framework.http;
+namespace Web_Framework.lib;
 
 public readonly record struct Code(int StatusCode, string Status);
 

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using Web_Framework.lib;
 
 namespace Web_Framework.http;
 
@@ -9,9 +10,23 @@ namespace Web_Framework.http;
 public class HttpResponse
 {
     // These are feilds the are formatted differently to the rest and hence stored ♦differently
-    public HttpStatusCode StatusCode { get; set; }
+    public Code StatusCode { get; set; }
     public string HttpVersion { get; set; }
-    
+    private string _content;
+
+    public HttpResponse()
+    {
+        string time =  DateTime.Now.ToString("R");
+        HttpHeader.HttpHeaderData<object> dateHeader = new HttpHeader.HttpHeaderData<object>();
+        dateHeader.CreateHeader("Date", time);
+        dateHeader.SetStringifier();
+        AddHeader(dateHeader);
+        
+        HttpHeader.HttpHeaderData<object> serverHeader = new HttpHeader.HttpHeaderData<object>();
+        serverHeader.CreateHeader("Server", "Turtin");
+        serverHeader.SetStringifier();
+        AddHeader(serverHeader);
+    }
     
     // Stores all the headers for this server response
     private List<HttpHeader.IHttpHeaders<object>> _headers = new List<HttpHeader.IHttpHeaders<object>>();
@@ -34,9 +49,19 @@ public class HttpResponse
         return _headers;
     }
 
-    public HttpResponse CreaetResponse(HttpResponse request) // tbc
+    public void SetContent(string contentType, string content)
     {
-        return this;
+        HttpHeader.HttpHeaderData<object> typeHeader = new HttpHeader.HttpHeaderData<object>();
+        typeHeader.CreateHeader("Content-Type", contentType);
+        typeHeader.SetStringifier();
+        AddHeader(typeHeader);
+        
+        HttpHeader.HttpHeaderData<object> lengthHeader = new HttpHeader.HttpHeaderData<object>();
+        lengthHeader.CreateHeader("Content-Length", content.Length);
+        lengthHeader.SetStringifier();
+        AddHeader(lengthHeader);
+        
+        _content = content;
     }
 
     /// <summary>
@@ -49,13 +74,16 @@ public class HttpResponse
     {
         
         // Adding in the main headers
-        string HeaderText = "";
+        string headerText = $"{HttpVersion} {StatusCode.StatusCode} {StatusCode.Status}\n";
         
         foreach (HttpHeader.IHttpHeaders<object> header in _headers)
         {
-            HeaderText += $"{header.GetName()}: {header.ToString()}\n";
+            headerText += $"{header.GetName()}: {header.ToString()}\n";
         }
+
+        headerText += "\n";
+        headerText += _content;
         
-        return Encoding.ASCII.GetBytes(HeaderText); // temp
+        return Encoding.ASCII.GetBytes(headerText); // temp
     }
 }

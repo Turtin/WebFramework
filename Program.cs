@@ -64,12 +64,3 @@ class Program
         StartupProccess();
     }
 }
-
-// var response = new HttpResponse();
-// var header = new HttpHeader.HttpHeaderData<object>();
-//
-// header.CreateHeader("Content-Type", IntegerType.FromObject(2));
-// header.SetStringifier();
-// response.AddHeader(header);
-//
-// Console.WriteLine(Encoding.ASCII.GetString(response.GetResponseBytes()));

@@ -9,9 +9,18 @@ namespace Web_Framework.web;
 
 public class WebPaths
 {
-    private Tree<Func<StatusCode>> _paths = new();
+    private Tree<Func<HttpResponse, Code>> _paths = new();
+    private static WebPaths _instance;
+    
+    private WebPaths() {}
 
-    public void AddPath(Func<StatusCode> service)
+    public static WebPaths GetInstance()
+    {
+        _instance ??= new WebPaths();
+        return _instance;
+    }
+
+    public void AddPath(Func<HttpResponse, Code> service)
     {
         Destination serviceInfo = service.Method.GetCustomAttribute<Destination>() ?? throw new InvalidServiceHandlerException(service);
         string path = serviceInfo.Path;
@@ -24,7 +33,7 @@ public class WebPaths
             return;
         }
 
-        Tree<Func<StatusCode>>.Node<Func<StatusCode>> currentNode = _paths.GetNode(segments[0]);
+        Tree<Func<HttpResponse, Code>>.Node<Func<HttpResponse, Code>> currentNode = _paths.GetNode(segments[0]);
         
         foreach (string segment in path.Split('/'))
         {
@@ -56,18 +65,18 @@ public class WebPaths
         {
             if (method.GetCustomAttribute<Destination>() != null)
             {
-                AddPath((Func<StatusCode>) Delegate.CreateDelegate(typeof(Func<StatusCode>), method));
+                AddPath((Func<HttpResponse, Code>) Delegate.CreateDelegate(typeof(Func<HttpResponse, Code>), method));
             }
         }
     }
     
-    public Func<StatusCode> GetPath(string path)
+    public Func<HttpResponse, Code> GetPath(string path)
     {
         string[]  segments = path.Split('/');
 
         try
         {
-            Tree<Func<StatusCode>>.Node<Func<StatusCode>> currentNode = _paths.GetNode(segments[0]);
+            Tree<Func<HttpResponse, Code>>.Node<Func<HttpResponse, Code>> currentNode = _paths.GetNode(segments[0]);
             
             foreach (string segment in segments)
             {
@@ -84,6 +93,12 @@ public class WebPaths
             Logger.GetLogger().Log(Logger.LogLevel.Warning, $"Path not found: {path}");
         }
 
-        return null; // temp
+        return DefaultPage; // temp
+    }
+
+    [Destination("*", RequestMethods.GET)]
+    private Code DefaultPage(HttpResponse response)
+    {
+        return StatusCode.NotFound;
     }
 }
